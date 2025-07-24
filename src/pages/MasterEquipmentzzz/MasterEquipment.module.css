@@ -1,0 +1,11 @@
+.add_masterEquipt_button {
+    display: flex;
+    justify-content: center; /* จัดกลางแนวนอน */
+    align-items: center; /* จัดกลางแนวตั้ง */
+    padding: 20px 0;     
+}
+
+/* สำหรับดอกจันสีแดง */
+.required_asterisk {
+  color: red;
+}
