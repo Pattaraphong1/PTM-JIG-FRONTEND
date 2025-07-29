@@ -1,18 +1,14 @@
-import React from "react";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Navbar from "../../components/Navbar/Navbar";
 import Sidebar from "../../components/Sidebar/Sidebar";
 import Footer from "../../components/Footer/Footer";
 import Swal from "sweetalert2";
 import Select from "react-select";
-
-
-import { DataTable } from 'primereact/datatable';
-import { Column } from 'primereact/column';
-        
+import axios from "axios"; // Import axios
 import styles from "../MasterEquipment/MasterEquipment.module.css";
-
 import { Form, Row, Col, Modal, Container, Button } from "react-bootstrap";
+
+import DataTable_Exam from "../MasterEquipment/DataTable_Exam";
 
 function MasterEquipment() {
   const [show, setShow] = useState(false);
@@ -40,23 +36,36 @@ function MasterEquipment() {
     });
   };
 
-  const sectionOptionsType = [
-    { value: "type_jig_assy", label: "Jig Assy" },
-    { value: "type_jig_inspection", label: "Jig Inspection" },
-    { value: "type_equipment", label: "Equipment" },
-    { value: "type_machine", label: "Machine" },
-    { value: "type_tool", label: "Tool" },
-    { value: "type_unit_master_sample", label: "Unit Master Sample" },
-    { value: "type_map_master_software", label: "Map Master Software" },
-    { value: "type_circuit_for_ict", label: "Circuit (For ICT)" },
-    { value: "type_general", label: "General" },
-    { value: "type_diptray", label: "DIP Tray" },
-    { value: "type_software", label: "Software" },
-    { value: "type_testdisc", label: "Test DISC" },
-    { value: "type_connector", label: "Connector" },
-    { value: "type_modify", label: "Modify" },
-  ];
+  // State to store API fetched type options
+  const [sectionOptionsType, setSectionOptionsType] = useState([]);
   const [selectedType, setSelectedType] = useState(null); // เก็บค่าที่เลือกจาก react-select
+
+  // useEffect to fetch data when the component mounts
+  useEffect(() => {
+    const fetchEquipmentTypes = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:3000/api/allMasterEquipmentType"
+        );
+        const formattedOptions = response.data.map((item) => ({
+          value: item.type_id, // Or whatever your API uses for the value
+          label: item.type_name, // Or whatever your API uses for the display name
+        }));
+        setSectionOptionsType(formattedOptions);
+        console.log(formattedOptions);
+      } catch (error) {
+        console.error("Error fetching equipment types:", error);
+        Swal.fire({
+          title: "Error",
+          text: "Failed to load equipment types.",
+          icon: "error",
+          confirmButtonText: "Ok",
+        });
+      }
+    };
+
+    fetchEquipmentTypes();
+  }, []); // Empty dependency array means this effect runs once after the initial render
 
   const sectionOptions = [
     { value: "respond_assy", label: "ASSY" },
@@ -72,53 +81,55 @@ function MasterEquipment() {
   ];
   const [selectedLocation, setSelectedLocation] = useState(null); // เก็บค่าที่เลือกจาก react-select
 
-  const [selectedCalibrationControl, setSelectedCalibrationControl] = useState(null); // เก็บค่าที่เลือกจาก react-select
+  const [selectedCalibrationControl, setSelectedCalibrationControl] =
+    useState(null); // เก็บค่าที่เลือกจาก react-select
 
-  const today = new Date();
-  const formattedDate = today.toISOString().split("T")[0]; // Gets YYYY-MM-DD
+  const [calibrationDate, setCalibrationDate] = useState(""); // State for Calibration Date
+  const [nextCalibrationDate, setNextCalibrationDate] = useState(""); // State for Next Calibration Date
 
   return (
     <>
-      <Navbar />
-      <Sidebar />
-      {/* Content */}
-      {/* Content Wrapper. Contains page content */}
-      <div className="content-wrapper">
-        {/* Content Header (Page header) */}
-        <div className="content-header">
-          <div className="container-fluid">
-            <div className="row mb-2">
-              <div className="col">
-                <h1>Master Equipment</h1>
+      <div className="content">
+        <div className="wrapper">
+          <Navbar />
+          <Sidebar />
+          {/* Content Wrapper. Contains page content */}
+          <div className="content-wrapper">
+            {/* Content Header (Page header) */}
+            <div className="content-header">
+              <div className="container-fluid">
+                <div className="row mb-2">
+                  <div className="col">
+                    <h1>Master Equipment</h1>
+                  </div>
+                  {/* /.col */}
+                </div>
+                {/* /.row */}
               </div>
-              {/* /.col */}
+              {/* /.container-fluid */}
             </div>
-            {/* /.row */}
+            {/* /.content-header */}
+            {/* Main content */}
+            <section className="content">
+              <div className="container-fluid"></div>
+              <div className={styles.add_masterEquipt_button}>
+                {/* <Button variant="primary" onClick={addEquipment}>ADD Equipment</Button> */}
+                <Button variant="primary" size="lg" onClick={handleShow}>
+                  Add Master Equipment
+                </Button>
+              </div>
+
+              <div className="mt-5 p-1">
+                 <DataTable_Exam />
+              </div>
+             
+              {/*/. container-fluid */}
+            </section>
+            {/* /.content */}
           </div>
-          {/* /.container-fluid */}
-        </div>
-        {/* /.content-header */}
+          {/* /.content-wrapper */}
 
-        {/* Main content */}
-        <section className="content">
-          <div className="container-fluid"></div>
-          <div className={styles.add_masterEquipt_button}>
-            {/* <Button variant="primary" onClick={addEquipment}>ADD Equipment</Button> */}
-            <Button variant="primary" onClick={handleShow}>
-              Add Master Equipment
-            </Button>
-          </div>
-
-          <div className="card"></div>
-
-          {/*/. container-fluid */}
-        </section>
-        {/* /.content */}
-      </div>
-      {/* /.content-wrapper */}
-      {/* End Content */}
-
-      {/* Modal */}
+           {/* Modal */}
       <Modal show={show} onHide={handleClose} size="xl">
         <Modal.Header closeButton>
           <Modal.Title>
@@ -129,52 +140,44 @@ function MasterEquipment() {
           <Form onSubmit={handleSubmit}>
             <Row className="mb-3">
               <Col xs={12} md={6} lg={2}>
-                {" "}
                 {/* Column 1: Label "Code" */}
                 <Form.Label className="col-form-label text-md-end text-start">
                   Code <span style={{ color: "red" }}>**</span>
                 </Form.Label>
               </Col>
               <Col xs={12} md={6} lg={4}>
-                {" "}
                 {/* Column 2: Input for Code */}
                 <Form.Control type="text" id="code" placeholder="Enter Code" />
               </Col>
               <Col xs={12} md={6} lg={2}>
-                {" "}
                 {/* Column 3: Label "Control No" */}
                 <Form.Label className="col-form-label text-md-end text-start">
                   Control No
                 </Form.Label>
               </Col>
               <Col xs={12} md={6} lg={4}>
-                {" "}
                 {/* Column 4: Input for Control No */}
                 <Form.Control type="text" placeholder="Enter Control No" />
               </Col>
             </Row>
             <Row className="mb-3">
               <Col xs={12} md={6} lg={2}>
-                {" "}
                 {/* Column 1: Label "Code" */}
                 <Form.Label className="col-form-label text-md-end text-start">
                   Jig Name <span style={{ color: "red" }}>**</span>
                 </Form.Label>
               </Col>
               <Col xs={12} md={6} lg={4}>
-                {" "}
                 {/* Column 2: Input for Code */}
                 <Form.Control type="text" placeholder="Enter Jig Name" />
               </Col>
               <Col xs={12} md={6} lg={2}>
-                {" "}
                 {/* Column 3: Label "Control No" */}
                 <Form.Label className="col-form-label text-md-end text-start">
                   Application Model
                 </Form.Label>
               </Col>
               <Col xs={12} md={6} lg={4}>
-                {" "}
                 {/* Column 4: Input for Control No */}
                 <Form.Control
                   type="text"
@@ -184,82 +187,70 @@ function MasterEquipment() {
             </Row>
             <Row className="mb-3">
               <Col xs={12} md={6} lg={2}>
-                {" "}
                 {/* Column 1: Label "Code" */}
                 <Form.Label className="col-form-label text-md-end text-start">
                   Jig Number
                 </Form.Label>
               </Col>
               <Col xs={12} md={6} lg={4}>
-                {" "}
                 {/* Column 2: Input for Code */}
                 <Form.Control type="text" placeholder="Enter Jig Number" />
               </Col>
               <Col xs={12} md={6} lg={2}>
-                {" "}
                 {/* Column 3: Label "Control No" */}
                 <Form.Label className="col-form-label text-md-end text-start">
                   Entry Date <span style={{ color: "red" }}>**</span>
                 </Form.Label>
               </Col>
               <Col xs={12} md={6} lg={4}>
-                {" "}
                 {/* Column 4: Input for Control No */}
                 <Form.Control
                   type="date"
                   placeholder="Enter Entry Date"
-                  defaultValue={formattedDate}
+                  // defaultValue={formattedDate}
                 />
               </Col>
             </Row>
             <Row className="mb-3">
               <Col xs={12} md={6} lg={2}>
-                {" "}
                 {/* Column 1: Label "Code" */}
                 <Form.Label className="col-form-label text-md-end text-start">
                   Marker
                 </Form.Label>
               </Col>
               <Col xs={12} md={6} lg={4}>
-                {" "}
                 {/* Column 2: Input for Code */}
                 <Form.Control type="text" placeholder="Enter Marker" />
               </Col>
               <Col xs={12} md={6} lg={2}>
-                {" "}
                 {/* Column 3: Label "Control No" */}
                 <Form.Label className="col-form-label text-md-end text-start">
                   Issue Date <span style={{ color: "red" }}>**</span>
                 </Form.Label>
               </Col>
               <Col xs={12} md={6} lg={4}>
-                {" "}
                 {/* Column 4: Input for Control No */}
                 <Form.Control type="date" placeholder="Enter Issue Date" />
               </Col>
             </Row>
             <Row className="mb-3">
               <Col xs={12} md={6} lg={2}>
-                {" "}
                 {/* Column 1: Label "Code" */}
                 <Form.Label className="col-form-label text-md-end text-start">
                   Suffix No
                 </Form.Label>
               </Col>
               <Col xs={12} md={6} lg={4}>
-                {" "}
                 {/* Column 2: Input for Code */}
                 <Form.Control type="text" placeholder="Enter Suffix No" />
               </Col>
               <Col xs={12} md={6} lg={2}>
-                {" "}
                 {/* Column 3: Label "Control No" */}
                 <Form.Label className="col-form-label text-md-end text-start">
                   Calibration Control <span style={{ color: "red" }}>**</span>
                 </Form.Label>
               </Col>
               <Col xs={12} md={6} lg={4}>
-                {" "}
                 {/* Column 4: Input for Control No */}
                 {/* <Form.Control type="text" placeholder="Enter Calibration Control" /> */}
                 <Form.Group controlId="formLocation">
@@ -299,26 +290,22 @@ function MasterEquipment() {
             </Row>
             <Row className="mb-3">
               <Col xs={12} md={6} lg={2}>
-                {" "}
                 {/* Column 1: Label "Code" */}
                 <Form.Label className="col-form-label text-md-end text-start">
                   Serial No
                 </Form.Label>
               </Col>
               <Col xs={12} md={6} lg={4}>
-                {" "}
                 {/* Column 2: Input for Code */}
                 <Form.Control type="text" placeholder="Enter Serial No" />
               </Col>
               <Col xs={12} md={6} lg={2}>
-                {" "}
                 {/* Column 3: Label "Control No" */}
                 <Form.Label className="col-form-label text-md-end text-start">
                   Calibration Date <span style={{ color: "red" }}>**</span>
                 </Form.Label>
               </Col>
               <Col xs={12} md={6} lg={4}>
-                {" "}
                 {/* Column 4: Input for Control No */}
                 <Form.Control
                   type="date"
@@ -328,26 +315,22 @@ function MasterEquipment() {
             </Row>
             <Row className="mb-3">
               <Col xs={12} md={6} lg={2}>
-                {" "}
                 {/* Column 1: Label "Code" */}
                 <Form.Label className="col-form-label text-md-end text-start">
                   Asset No
                 </Form.Label>
               </Col>
               <Col xs={12} md={6} lg={4}>
-                {" "}
                 {/* Column 2: Input for Code */}
                 <Form.Control type="text" placeholder="Enter Asset No" />
               </Col>
               <Col xs={12} md={6} lg={2}>
-                {" "}
                 {/* Column 3: Label "Control No" */}
                 <Form.Label className="col-form-label text-md-end text-start">
                   Next Calibration Date <span style={{ color: "red" }}>**</span>
                 </Form.Label>
               </Col>
               <Col xs={12} md={6} lg={4}>
-                {" "}
                 {/* Column 4: Input for Control No */}
                 <Form.Control
                   type="date"
@@ -357,20 +340,18 @@ function MasterEquipment() {
             </Row>
             <Row className="mb-3">
               <Col xs={12} md={6} lg={2}>
-                {" "}
                 {/* Column 1: Label "Code" */}
                 <Form.Label className="col-form-label text-md-end text-start">
                   Type <span style={{ color: "red" }}>**</span>
                 </Form.Label>
               </Col>
               <Col xs={12} md={6} lg={4}>
-                {" "}
                 {/* Column 2: Input for Code */}
                 {/* <Form.Control type="text" placeholder="Enter Type" /> */}
                 <Form.Group className="mb-3" controlId="formLocation">
                   {/* <Form.Label>Section</Form.Label> */}
                   <Select
-                    options={sectionOptionsType} // ตัวเลือกต่างๆ
+                    options={sectionOptionsType} // Use the state variable for options
                     value={selectedType} // ค่าที่เลือกในปัจจุบัน
                     onChange={setSelectedType} // เมื่อมีการเลือกตัวเลือก
                     placeholder="Select a Type..." // ข้อความ Placeholder
@@ -399,28 +380,24 @@ function MasterEquipment() {
                 </Form.Group>
               </Col>
               <Col xs={12} md={6} lg={2}>
-                {" "}
                 {/* Column 3: Label "Control No" */}
                 <Form.Label className="col-form-label text-md-end text-start">
                   Shelf
                 </Form.Label>
               </Col>
               <Col xs={12} md={6} lg={4}>
-                {" "}
                 {/* Column 4: Input for Control No */}
                 <Form.Control type="text" placeholder="Enter Shelf" />
               </Col>
             </Row>
             <Row className="mb-3">
               <Col xs={12} md={6} lg={2}>
-                {" "}
                 {/* Column 1: Label "Code" */}
                 <Form.Label className="col-form-label text-md-end text-start">
                   Photo
                 </Form.Label>
               </Col>
               <Col xs={12} md={6} lg={4}>
-                {" "}
                 {/* Column 2: Input for Code */}
                 {/* <Form.Control type="file" placeholder="Enter Photo" /> */}
                 <div className="custom-file">
@@ -438,28 +415,24 @@ function MasterEquipment() {
                 </div>
               </Col>
               <Col xs={12} md={6} lg={2}>
-                {" "}
                 {/* Column 3: Label "Control No" */}
                 <Form.Label className="col-form-label text-md-end text-start">
                   Floor
                 </Form.Label>
               </Col>
               <Col xs={12} md={6} lg={4}>
-                {" "}
                 {/* Column 4: Input for Control No */}
                 <Form.Control type="text" placeholder="Enter Floor" />
               </Col>
             </Row>
             <Row className="mb-3">
               <Col xs={12} md={6} lg={2}>
-                {" "}
                 {/* Column 1: Label "Code" */}
                 <Form.Label className="col-form-label text-md-end text-start">
                   Respond <span style={{ color: "red" }}>**</span>
                 </Form.Label>
               </Col>
               <Col xs={12} md={6} lg={4}>
-                {" "}
                 {/* Column 2: Input for Code */}
                 {/* <Form.Control type="text" placeholder="Enter Respond" /> */}
                 <Form.Group controlId="formRespond">
@@ -494,14 +467,12 @@ function MasterEquipment() {
                 </Form.Group>
               </Col>
               <Col xs={12} md={6} lg={2}>
-                {" "}
                 {/* Column 3: Label "Control No" */}
                 <Form.Label className="col-form-label text-md-end text-start">
                   Location
                 </Form.Label>
               </Col>
               <Col xs={12} md={6} lg={4}>
-                {" "}
                 {/* Column 4: Input for Control No */}
                 {/* <Form.Control type="text" placeholder="Enter Location" /> */}
                 <Form.Group controlId="formLocation">
@@ -538,27 +509,23 @@ function MasterEquipment() {
             </Row>
             <Row className="mb-3">
               <Col xs={12} md={6} lg={2}>
-                {" "}
                 {/* Column 1: Label "Code" */}
                 <Form.Label className="col-form-label text-md-end text-start">
                   Section
                 </Form.Label>
               </Col>
               <Col xs={12} md={6} lg={4}>
-                {" "}
                 {/* Column 4: Input for Control No */}
                 <Form.Control type="text" placeholder="Enter Section" />
               </Col>
 
               <Col xs={12} md={6} lg={2}>
-                {" "}
                 {/* Column 3: Label "Control No" */}
                 <Form.Label className="col-form-label text-md-end text-start">
                   Remark
                 </Form.Label>
               </Col>
               <Col xs={12} md={6} lg={4}>
-                {" "}
                 {/* Column 4: Input for Control No */}
                 <Form.Control type="text" placeholder="Enter Remark" />
               </Col>
@@ -578,8 +545,9 @@ function MasterEquipment() {
         </Modal.Body>
       </Modal>
       {/* Close Modal */}
-
-      <Footer />
+          <Footer />
+        </div>
+      </div>
     </>
   );
 }

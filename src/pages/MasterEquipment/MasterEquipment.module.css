@@ -4,3 +4,10 @@
     align-items: center; /* จัดกลางแนวตั้ง */
     padding: 20px 0;     
 }
+
+.header_datatable_style{
+    background-color: '#20B2AA';
+    color: 'white';
+    white-space: 'nowrap',
+}
+
