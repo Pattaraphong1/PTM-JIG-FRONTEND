@@ -8,7 +8,9 @@ import axios from "axios"; // Import axios
 import styles from "../MasterEquipment/MasterEquipment.module.css";
 import { Form, Row, Col, Modal, Container, Button } from "react-bootstrap";
 
+
 import DataTable_Exam from "../MasterEquipment/DataTable_Exam";
+import EquipmentList from "../MasterEquipment/EquipmentList";
 
 function MasterEquipment() {
   const [show, setShow] = useState(false);
@@ -35,10 +37,6 @@ function MasterEquipment() {
       confirmButtonText: "Add",
     });
   };
-
-  // State to store API fetched type options
-  const [sectionOptionsType, setSectionOptionsType] = useState([]);
-  const [selectedType, setSelectedType] = useState(null); // เก็บค่าที่เลือกจาก react-select
 
   // useEffect to fetch data when the component mounts
   useEffect(() => {
@@ -67,10 +65,22 @@ function MasterEquipment() {
     fetchEquipmentTypes();
   }, []); // Empty dependency array means this effect runs once after the initial render
 
-  const sectionOptions = [
+  // State to store API fetched type options
+  const [sectionOptionsType, setSectionOptionsType] = useState([]);
+  const [selectedType, setSelectedType] = useState(null); // เก็บค่าที่เลือกจาก react-select
+
+  const respondOptions = [
     { value: "respond_assy", label: "ASSY" },
     { value: "respond_smt", label: "SMT" },
     { value: "respond_qa", label: "QA" },
+  ];
+  const [selectedRespond, setSelectedRespond] = useState(null); // เก็บค่าที่เลือกจาก react-select
+
+  const sectionOptions = [
+    { value: "section_prod2", label: "Production 2" },
+    { value: "section_prod3", label: "Production 3" },
+    { value: "section_prod5", label: "Production 5" },
+    { value: "section_me", label: "ME" },
   ];
   const [selectedSection, setSelectedSection] = useState(null); // เก็บค่าที่เลือกจาก react-select
 
@@ -114,13 +124,14 @@ function MasterEquipment() {
               <div className="container-fluid"></div>
               <div className={styles.add_masterEquipt_button}>
                 {/* <Button variant="primary" onClick={addEquipment}>ADD Equipment</Button> */}
-                <Button variant="primary" size="lg" onClick={handleShow}>
+                <Button variant="primary" size="lg" onClick={handleShow}>                         
                   Add Master Equipment
                 </Button>
               </div>
 
               <div className="mt-5 p-1">
                  <DataTable_Exam />
+                 {/* <EquipmentList/> */}
               </div>
              
               {/*/. container-fluid */}
@@ -438,9 +449,9 @@ function MasterEquipment() {
                 <Form.Group controlId="formRespond">
                   {/* <Form.Label>Section</Form.Label> */}
                   <Select
-                    options={sectionOptions} // ตัวเลือกต่างๆ
-                    value={selectedSection} // ค่าที่เลือกในปัจจุบัน
-                    onChange={setSelectedSection} // เมื่อมีการเลือกตัวเลือก
+                    options={respondOptions} // ตัวเลือกต่างๆ
+                    value={selectedRespond} // ค่าที่เลือกในปัจจุบัน
+                    onChange={setSelectedRespond} // เมื่อมีการเลือกตัวเลือก
                     placeholder="Select a Respond..." // ข้อความ Placeholder
                     isClearable // อนุญาตให้ล้างค่าที่เลือกได้
                     isSearchable // อนุญาตให้ค้นหาได้
@@ -511,12 +522,42 @@ function MasterEquipment() {
               <Col xs={12} md={6} lg={2}>
                 {/* Column 1: Label "Code" */}
                 <Form.Label className="col-form-label text-md-end text-start">
-                  Section
+                  Section <span style={{ color: "red" }}>**</span>
                 </Form.Label>
               </Col>
               <Col xs={12} md={6} lg={4}>
-                {/* Column 4: Input for Control No */}
-                <Form.Control type="text" placeholder="Enter Section" />
+                {/* Column 2: Input for Code */}
+                {/* <Form.Control type="text" placeholder="Enter Respond" /> */}
+                <Form.Group controlId="formRespond">
+                  {/* <Form.Label>Section</Form.Label> */}
+                  <Select
+                    options={sectionOptions} // ตัวเลือกต่างๆ
+                    value={selectedSection} // ค่าที่เลือกในปัจจุบัน
+                    onChange={setSelectedSection} // เมื่อมีการเลือกตัวเลือก
+                    placeholder="Select a Section..." // ข้อความ Placeholder
+                    isClearable // อนุญาตให้ล้างค่าที่เลือกได้
+                    isSearchable // อนุญาตให้ค้นหาได้
+                    // Styles เพื่อให้เข้ากับ Bootstrap ได้ดีขึ้น
+                    styles={{
+                      control: (baseStyles, state) => ({
+                        ...baseStyles,
+                        borderColor: state.isFocused
+                          ? "#80bdff"
+                          : baseStyles.borderColor, // Border color เมื่อ focus
+                        boxShadow: state.isFocused
+                          ? "0 0 0 0.25rem rgba(0, 123, 255, 0.25)"
+                          : "none", // Shadow เมื่อ focus
+                        "&:hover": {
+                          borderColor: "#80bdff", // Border color on hover
+                        },
+                      }),
+                      menu: (baseStyles, state) => ({
+                        ...baseStyles,
+                        zIndex: 9999, // ตรวจสอบให้แน่ใจว่า dropdown ไม่ถูกซ่อน
+                      }),
+                    }}
+                  />
+                </Form.Group>
               </Col>
 
               <Col xs={12} md={6} lg={2}>

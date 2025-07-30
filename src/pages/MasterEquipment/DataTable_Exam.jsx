@@ -17,6 +17,7 @@ import { InputNumber } from 'primereact/inputnumber';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { Tag } from 'primereact/tag';
+import axios from 'axios';
 
 import styles from "../MasterEquipment/MasterEquipment.module.css";
 
@@ -43,6 +44,29 @@ export default function ProductsDemo() {
     const [globalFilter, setGlobalFilter] = useState(null);
     const toast = useRef(null);
     const dt = useRef(null);
+
+    const [masterEquipment, setMasterEquipment] = useState(null);
+
+    useEffect(() => {
+    const fetchEquipmentTypes = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:3000/api/allMasterEquipmentType"
+        );
+        const formattedOptions = response.data.map((item) => ({
+          value: item.type_id, // Or whatever your API uses for the value
+          label: item.type_name, // Or whatever your API uses for the display name
+        }));
+        setSectionOptionsType(formattedOptions);
+        console.log(formattedOptions);
+      } catch (error) {
+        console.error("Error fetching equipment types:", error);
+      }
+    };
+
+    fetchEquipmentTypes();
+  }, []); // Empty dependency array means this effect runs once after the initial render
+
 
     useEffect(() => {
         ProductService.getProducts().then((data) => setProducts(data));
