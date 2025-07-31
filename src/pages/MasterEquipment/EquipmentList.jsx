@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Toast } from 'primereact/toast';
@@ -10,7 +10,10 @@ import { InputText } from 'primereact/inputtext';
 import axios from 'axios';
 
 
-import jsPDF from 'jspdf';
+// import jsPDF from 'jspdf';
+// import 'jspdf-autotable';
+
+import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 
 
@@ -38,7 +41,7 @@ export default function ProductsDemo() {
                 toast.current.show({
                     severity: 'error',
                     summary: 'Error',
-                    detail: 'ไม่สามารถโหลดข้อมูลอุปกรณ์ได้',
+                    detail: 'ไม่สามารถโหลดข้อมูล Master Equipment ได้',
                     life: 3000
                 });
             } finally {
@@ -97,57 +100,17 @@ export default function ProductsDemo() {
 
    // **** แก้ไขฟังก์ชัน Export PDF ****
     const exportPDF = () => {
-        console.log("Export PDF");
-        const doc = new jsPDF();
-        
-        // กำหนดส่วนหัวของตาราง
-        const head = [
-            [
-                "Code", "Jig Name", "Jig Number", "Maker", "Suffix No", "Serial No", 
-                "Asset No", "Type", "Respond", "Section", "Control No", 
-                "Application Model", "Entry Date", "Issue Date", "Calibration Date", 
-                "Next Calibration Date", "Shelf", "Floor", "Location", 
-                "Calibration Control", "Remark", "Status"
-            ]
-        ];
+       const doc = new jsPDF();
+        // บันทึกไฟล์ PDF
 
-        // เตรียมข้อมูลสำหรับตาราง (ไม่รวมคอลัมน์รูปภาพและคอลัมน์เลือก)
-        const body = equipment.map(item => [
-            item.equipment_id,
-            item.jig_name,
-            item.jig_number,
-            item.maker,
-            item.suffix_no,
-            item.serial_no,
-            item.asset_no,
-            item.type,
-            item.respond,
-            item.section,
-            item.control_no,
-            item.application_model,
-            item.entry_date,
-            item.issue_date,
-            item.calibration_date,
-            item.next_calibration_date,
-            item.shelf,
-            item.floor,
-            item.location,
-            item.calibration_control,
-            item.remark,
-            item.status
-        ]);
-
-        // เพิ่มตารางลงในเอกสาร PDF
         doc.autoTable({
-            head: head,
-            body: body,
-            startY: 20, // เริ่มต้นตารางที่ตำแหน่ง Y=20
-            theme: 'striped', // รูปแบบตาราง
-            headStyles: { fillColor: [41, 128, 185] }, // สีพื้นหลังของหัวตาราง
-            margin: { top: 10 } // กำหนดระยะขอบบน
+        head: [['Name', 'Email', 'Country']],
+        body: [
+            ['David', 'david@example.com', 'Sweden'],
+            ['Castille', 'castille@example.com', 'Spain'],
+        ],
         });
 
-        // บันทึกไฟล์ PDF
         doc.save('equipment_list.pdf');
 
         toast.current.show({
@@ -182,14 +145,13 @@ export default function ProductsDemo() {
                     {/* 6. ตรวจสอบ field prop ให้ตรงกับชื่อ key ของข้อมูลที่มาจาก API */}
                     <Column field="equipment_id" header="Code" sortable style={{ minWidth: '12rem' }}></Column>                   
                     <Column field="photo" header="Photo" body={imageBodyTemplate}></Column>
-                    <Column field="jig_name" header="Jig Name" sortable style={{ minWidth: '20rem' }}></Column> {/* เพิ่ม sortable */}
-                     <Column field="jig_number" header="Jig Number" sortable style={{ minWidth: '16rem' }}></Column>
+                    <Column field="jig_name" header="Jig Name" sortable style={{ minWidth: '20rem' }}></Column>
+                    <Column field="jig_number" header="Jig Number" sortable style={{ minWidth: '16rem' }}></Column>
                     <Column field="maker" header="Maker" sortable style={{ minWidth: '8rem' }}></Column>
                     <Column field="suffix_no" header="Suffix No" sortable style={{ minWidth: '10rem' }}></Column>
-                    <Column field="serial_no" header="Serial No" sortable style={{ minWidth: '12rem' }}></Column>
+                     <Column field="serial_no" header="Serial No" sortable style={{ minWidth: '12rem' }}></Column>
                     <Column field="asset_no" header="Asset No" sortable style={{ minWidth: '12rem' }}></Column>
-                    <Column field="type" header="Type" sortable style={{ minWidth: '12rem' }}></Column>
-                    
+                    <Column field="type" header="Type" sortable style={{ minWidth: '12rem' }}></Column>                    
                     <Column field="respond" header="Respond" sortable style={{ minWidth: '12rem' }}></Column>
                     <Column field="section" header="Section" sortable style={{ minWidth: '12rem' }}></Column>
                     <Column field="control_no" header="Control No" sortable style={{ minWidth: '12rem' }}></Column>
@@ -204,7 +166,6 @@ export default function ProductsDemo() {
                     <Column field="calibration_control" header="Calibration Control" sortable style={{ minWidth: '12rem' }}></Column>
                     <Column field="remark" header="Remark" sortable style={{ minWidth: '12rem' }}></Column>
                     <Column field="status" header="Status" sortable style={{ minWidth: '12rem' }}></Column>
-
                 </DataTable>
             </div>
         </div>
