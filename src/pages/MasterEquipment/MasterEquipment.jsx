@@ -50,7 +50,7 @@ function MasterEquipment() {
           label: item.type_name, // Or whatever your API uses for the display name
         }));
         setSectionOptionsType(formattedOptions);
-        console.log(formattedOptions);
+        //console.log(formattedOptions);
       } catch (error) {
         console.error("Error fetching equipment types:", error);
         // Swal.fire({
