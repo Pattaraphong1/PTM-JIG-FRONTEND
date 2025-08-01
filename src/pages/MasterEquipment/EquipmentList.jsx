@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Toast } from "primereact/toast";
@@ -7,9 +7,13 @@ import { Toolbar } from "primereact/toolbar";
 import { IconField } from "primereact/iconfield";
 import { InputIcon } from "primereact/inputicon";
 import { InputText } from "primereact/inputtext";
+import { Calendar } from "primereact/calendar";
+import { Dropdown } from "primereact/dropdown";
+import { FileUpload } from "primereact/fileupload";
+
 import axios from "axios";
 import Swal from "sweetalert2";
-import { Tag } from 'primereact/tag';
+import { Tag } from "primereact/tag";
 import { Dialog } from "primereact/dialog";
 import { ProgressSpinner } from "primereact/progressspinner";
 
@@ -18,16 +22,46 @@ import "jspdf-autotable";
 import autoTable from "jspdf-autotable";
 import { addThaiFont } from "./../../../public/fonts/THSarabunNew";
 import { TextCenter } from "react-bootstrap-icons";
-
+import { InputTextarea } from "primereact/inputtextarea";
 export default function ProductsDemo() {
   const toast = useRef(null);
   const dt = useRef(null);
+   const [entryDate, setEntryDate] = useState(null);
+   const [issueDate, setIssueDate] = useState(null);
+   const [calibrationDate, setCalibrationDate] = useState(null);
+   const [nextCalibrationDate, setNextCalibrationDate] = useState(null);
+
 
   // 1. กำหนด state สำหรับเก็บข้อมูลที่จะแสดงใน DataTable
   const [equipment, setEquipment] = useState([]); // เปลี่ยนชื่อ state ให้สื่อความหมายมากขึ้น
   const [loading, setLoading] = useState(true); // เพิ่ม state สำหรับการโหลดข้อมูล
   const [globalFilterValue, setGlobalFilterValue] = useState(""); // สำหรับการค้นหา
   const [showLoadingDialog, setShowLoadingDialog] = useState(false); // เพิ่ม state ใหม่
+
+  const [productDialog, setProductDialog] = useState(false);
+
+  const hideDialog = () => {
+    //setSubmitted(false);
+    setProductDialog(false);
+  };
+
+  const saveProduct = () => {
+    setProductDialog(false);
+    Swal.fire({
+      icon: "warning",
+      title: "This Feature is Coming Soon!",
+      text: "Your data has been successfully updated.",
+      showConfirmButton: false, // Optional: Hide the "OK" button
+      timer: 2000, // Optional: Auto-close the alert after 1.5 seconds
+    });
+  };
+
+  const productDialogFooter = (
+    <React.Fragment>
+      <Button label="Cancel" icon="pi pi-times" outlined onClick={hideDialog} />
+      <Button label="Save" icon="pi pi-check" onClick={saveProduct} />
+    </React.Fragment>
+  );
 
   // 2. ใช้ useEffect เพื่อดึงข้อมูลจาก API
   useEffect(() => {
@@ -271,22 +305,42 @@ export default function ProductsDemo() {
     }, 100);
   };
 
-const statusBodyTemplate = (rowData) => {
+  const statusBodyTemplate = (rowData) => {
     return <Tag value={rowData.status} severity={getSeverity(rowData)}></Tag>;
-};
+  };
 
-const getSeverity = (equipment) => {
-        switch (equipment.status) {
-            case 'ON HAND':
-                return 'success';
+  const getSeverity = (equipment) => {
+    switch (equipment.status) {
+      case "ON HAND":
+        return "success";
 
-            case 'BORROW':
-                return 'warning';
+      case "BORROW":
+        return "warning";
 
-            default:
-                return null;
+      default:
+        return null;
     }
-};
+  };
+
+  const actionBodyTemplate = (rowData) => {
+    return (
+      <React.Fragment>
+        <Button
+          icon="pi pi-pencil"
+          rounded
+          outlined
+          className="mr-2"
+          onClick={() => editProduct(rowData)}
+        />
+        {/* <Button icon="pi pi-trash" rounded outlined severity="danger" onClick={() => confirmDeleteProduct(rowData)} /> */}
+      </React.Fragment>
+    );
+  };
+
+  const editProduct = (product) => {
+    // setProduct({ ...product });
+    setProductDialog(true);
+  };
 
   return (
     <div>
@@ -309,6 +363,205 @@ const getSeverity = (equipment) => {
         </div>
       </Dialog>
 
+      {/* <Dialog
+        visible={productDialog}
+        style={{ width: "32rem" }}
+        breakpoints={{ "960px": "75vw", "641px": "90vw" }}
+        header="Product Details"
+        modal
+        className="p-fluid"
+        footer={productDialogFooter}
+        onHide={hideDialog}
+      >
+        <div className="field">
+          <label htmlFor="name" className="font-bold">
+            Name
+          </label>
+          <InputText id="name" required autoFocus />
+        </div>
+        <div className="field">
+          <label htmlFor="description" className="font-bold">
+            Description
+          </label>
+          <InputTextarea id="description" required />
+        </div>
+      </Dialog> */}
+
+      <Dialog
+  visible={productDialog}
+  style={{ width: "80rem" }}
+  breakpoints={{ "960px": "75vw", "641px": "90vw" }}
+  header="Input Details Equipment"
+  modal
+  className="p-fluid"
+  footer={productDialogFooter}
+  onHide={hideDialog}
+>
+  <div className="formgrid grid">
+    <div className="field col-12 md:col-6">
+      <label htmlFor="code" className="font-bold">
+        Code <span style={{ color: "red" }}>**</span>
+      </label>
+      <InputText id="code" required autoFocus />
+    </div>
+    <div className="field col-12 md:col-6">
+      <label htmlFor="controlNo" className="font-bold">
+        Control No
+      </label>
+      <InputText id="controlNo" />
+    </div>
+    <div className="field col-12 md:col-6">
+      <label htmlFor="jigName" className="font-bold">
+        Jig Name <span style={{ color: "red" }}>**</span>
+      </label>
+      <InputText id="jigName" required />
+    </div>
+    <div className="field col-12 md:col-6">
+      <label htmlFor="applicationModel" className="font-bold">
+        Application Model
+      </label>
+      <InputText id="applicationModel" />
+    </div>
+    <div className="field col-12 md:col-6">
+      <label htmlFor="jigNumber" className="font-bold">
+        Jig Number
+      </label>
+      <InputText id="jigNumber" />
+    </div>
+    <div className="field col-12 md:col-6">
+      <label htmlFor="entryDate" className="font-bold">
+        Entry Date <span style={{ color: "red" }}>**</span>
+      </label>
+      {/* <Calendar id="entryDate" dateFormat="mm/dd/yy" /> */}
+       <Calendar id="entryDate" value={entryDate} onChange={(e) => setEntryDate(e.value)} showIcon />
+    </div>
+    <div className="field col-12 md:col-6">
+      <label htmlFor="marker" className="font-bold">
+        Marker
+      </label>
+      <InputText id="marker" />
+    </div>
+    <div className="field col-12 md:col-6">
+      <label htmlFor="issueDate" className="font-bold">
+        Issue Date <span style={{ color: "red" }}>**</span>
+      </label>
+      {/* <Calendar id="issueDate" dateFormat="mm/dd/yy" /> */}
+      <Calendar id="issueDate" value={issueDate} onChange={(e) => setIssueDate(e.value)} showIcon />
+    </div>
+    <div className="field col-12 md:col-6">
+      <label htmlFor="suffixNo" className="font-bold">
+        Suffix No
+      </label>
+      <InputText id="suffixNo" />
+    </div>
+    <div className="field col-12 md:col-6">
+      <label htmlFor="calibrationControl" className="font-bold">
+        Calibration Control <span style={{ color: "red" }}>**</span>
+      </label>
+      <Dropdown
+        id="calibrationControl"
+        options={[{ label: "NO", value: "NO" }, { label: "YES", value: "YES" }]}
+        placeholder="Select"
+      />
+    </div>
+    <div className="field col-12 md:col-6">
+      <label htmlFor="serialNo" className="font-bold">
+        Serial No
+      </label>
+      <InputText id="serialNo" />
+    </div>
+    <div className="field col-12 md:col-6">
+      <label htmlFor="calibrationDate" className="font-bold">
+        Calibration Date <span style={{ color: "red" }}>**</span>
+      </label>
+      {/* <Calendar id="calibrationDate" dateFormat="mm/dd/yy" /> */}
+      <Calendar id="calibrationDate" value={calibrationDate} onChange={(e) => setCalibrationDate(e.value)} showIcon />
+    </div>
+    <div className="field col-12 md:col-6">
+      <label htmlFor="assetNo" className="font-bold">
+        Asset No
+      </label>
+      <InputText id="assetNo" />
+    </div>
+    <div className="field col-12 md:col-6">
+      <label htmlFor="nextCalibrationDate" className="font-bold">
+        Next Calibration Date <span style={{ color: "red" }}>**</span>
+      </label>
+      {/* <Calendar id="nextCalibrationDate" dateFormat="mm/dd/yy" /> */}
+      <Calendar id="calibrationDate" value={nextCalibrationDate} onChange={(e) => setNextCalibrationDate(e.value)} showIcon />
+    </div>
+    <div className="field col-12 md:col-6">
+      <label htmlFor="type" className="font-bold">
+        Type <span style={{ color: "red" }}>**</span>
+      </label>
+      <Dropdown id="type" placeholder="Select a Type..." />
+    </div>
+    <div className="field col-12 md:col-6">
+      <label htmlFor="shelf" className="font-bold">
+        Shelf
+      </label>
+      <InputText id="shelf" />
+    </div>
+    <div className="field col-12 md:col-6">
+      <label htmlFor="photo" className="font-bold">
+        Photo
+      </label>
+      <FileUpload
+        name="photo"
+        mode="basic"
+        chooseLabel="Choose file"
+        accept="image/*"
+        maxFileSize={1000000}        
+      />
+    </div>
+    <div className="field col-12 md:col-6">
+      <label htmlFor="floor" className="font-bold">
+        Floor
+      </label>
+      <InputText id="floor" />
+    </div>
+    <div className="field col-12 md:col-6">
+      <label htmlFor="respond" className="font-bold">
+        Respond <span style={{ color: "red" }}>**</span>
+      </label>
+      {/* <Dropdown id="respond" placeholder="Select a Respond..." /> */}
+      <Dropdown
+        id="respond"
+        options={[{ label: "ASSY", value: "ASSY" }, { label: "SMT", value: "SMT" }, { label: "QA", value: "QA" }]}
+        placeholder="Select a Respond..."
+      />
+    </div>
+    <div className="field col-12 md:col-6">
+      <label htmlFor="location" className="font-bold">
+        Location
+      </label>
+      {/* <Dropdown id="location" placeholder="Select a Location..." /> */}
+      <Dropdown
+        id="location"
+        options={[{ label: "Jigroom Fac1", value: "JIGROOM_FAC1" }, { label: "Jigroom Fac2", value: "JIGROOM_FAC2" }, { label: "Spare Room", value: "SPARE_ROOM" }]}
+        placeholder="Select a Location..."
+      />
+    </div>
+    <div className="field col-12 md:col-6">
+      <label htmlFor="section" className="font-bold">
+        Section <span style={{ color: "red" }}>**</span>
+      </label>
+      {/* <Dropdown id="section" placeholder="Select a Section..." /> */}
+      <Dropdown
+        id="section"
+        options={[{ label: "Production 2", value: "PROD2" }, { label: "Production 3", value: "PROD3" }, { label: "Production 5", value: "PROD5" }, { label: "ME", value: "ME" }]}
+        placeholder="Select a Section..."
+      />
+    </div>
+    <div className="field col-12 md:col-6">
+      <label htmlFor="remark" className="font-bold">
+        Remark
+      </label>
+      <InputText id="remark" />
+    </div>
+  </div>
+</Dialog>
+
       <div className="card">
         {/* <Toolbar className="mb-4" left={leftToolbarTemplate} right={rightToolbarTemplate}></Toolbar> */}
         <Toolbar className="mb-4" left={rightToolbarTemplate}></Toolbar>
@@ -328,12 +581,13 @@ const getSeverity = (equipment) => {
         >
           {/* <Column selectionMode="multiple" exportable={false}></Column> */}
           {/* 6. ตรวจสอบ field prop ให้ตรงกับชื่อ key ของข้อมูลที่มาจาก API */}
+          <Column body={actionBodyTemplate} exportable={false}></Column>
           <Column
             field="equipment_id"
             header="Code"
             sortable
             style={{ minWidth: "12rem" }}
-             headerStyle={{ textAlign: "center" }}            
+            headerStyle={{ textAlign: "center" }}
           ></Column>
           <Column
             field="photo"
@@ -446,7 +700,7 @@ const getSeverity = (equipment) => {
             field="location"
             header="Location"
             sortable
-            style={{ minWidth: "12rem" }}
+            style={{ minWidth: "20rem" }}
           ></Column>
           <Column
             field="calibration_control"
@@ -466,7 +720,7 @@ const getSeverity = (equipment) => {
             body={statusBodyTemplate}
             sortable
             style={{ minWidth: "12rem" }}
-          ></Column>          
+          ></Column>      
         </DataTable>
       </div>
     </div>

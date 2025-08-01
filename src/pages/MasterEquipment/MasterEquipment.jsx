@@ -193,6 +193,7 @@ function MasterEquipment() {
               <div className="mt-5 p-1">
                 {/* <DataTable_Exam /> */}
                 <EquipmentList />
+                
                 {/* <AddMasterEquipmentModal/> */}
               </div>
 
