@@ -170,7 +170,7 @@ function MasterEquipment() {
             <div className="content-header">
               <div className="container-fluid">
                 <div className="row mb-2">
-                  <div className="col">
+                  <div className="col ml-1">
                     <h1>Master Equipment</h1>
                   </div>
                   {/* /.col */}

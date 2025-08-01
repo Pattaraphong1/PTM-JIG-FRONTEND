@@ -9,7 +9,7 @@ import { InputIcon } from "primereact/inputicon";
 import { InputText } from "primereact/inputtext";
 import axios from "axios";
 import Swal from "sweetalert2";
-
+import { Tag } from 'primereact/tag';
 import { Dialog } from "primereact/dialog";
 import { ProgressSpinner } from "primereact/progressspinner";
 
@@ -17,6 +17,7 @@ import { jsPDF } from "jspdf";
 import "jspdf-autotable";
 import autoTable from "jspdf-autotable";
 import { addThaiFont } from "./../../../public/fonts/THSarabunNew";
+import { TextCenter } from "react-bootstrap-icons";
 
 export default function ProductsDemo() {
   const toast = useRef(null);
@@ -244,7 +245,7 @@ export default function ProductsDemo() {
         });
 
         // 3. บันทึกไฟล์ PDF
-        doc.save("equipment_list.pdf");
+        doc.save("All Master Equipment.pdf");
 
         // 5. ปิด Loading dialog เมื่อสร้างไฟล์เสร็จสิ้น
         Swal.close();
@@ -269,6 +270,23 @@ export default function ProductsDemo() {
       }
     }, 100);
   };
+
+const statusBodyTemplate = (rowData) => {
+    return <Tag value={rowData.status} severity={getSeverity(rowData)}></Tag>;
+};
+
+const getSeverity = (equipment) => {
+        switch (equipment.status) {
+            case 'ON HAND':
+                return 'success';
+
+            case 'BORROW':
+                return 'warning';
+
+            default:
+                return null;
+    }
+};
 
   return (
     <div>
@@ -306,14 +324,16 @@ export default function ProductsDemo() {
           currentPageReportTemplate="Showing {first} to {last} of {totalRecords} equipments"
           header={header}
           globalFilter={globalFilterValue} // 5. เพิ่ม globalFilter สำหรับการค้นหา
+          className="ml-1"
         >
-          <Column selectionMode="multiple" exportable={false}></Column>
+          {/* <Column selectionMode="multiple" exportable={false}></Column> */}
           {/* 6. ตรวจสอบ field prop ให้ตรงกับชื่อ key ของข้อมูลที่มาจาก API */}
           <Column
             field="equipment_id"
             header="Code"
             sortable
             style={{ minWidth: "12rem" }}
+             headerStyle={{ textAlign: "center" }}            
           ></Column>
           <Column
             field="photo"
@@ -443,9 +463,10 @@ export default function ProductsDemo() {
           <Column
             field="status"
             header="Status"
+            body={statusBodyTemplate}
             sortable
             style={{ minWidth: "12rem" }}
-          ></Column>
+          ></Column>          
         </DataTable>
       </div>
     </div>
